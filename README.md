@@ -31,3 +31,21 @@ This project implements a dynamic multi-tenant architecture using Spring Boot an
 Create a database named `master_db`:
 ```sql
 CREATE DATABASE master_db;
+🧪 How to Test (Postman)
+Step 1: Register New Tenant
+POST /api/signup
+Body:
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "companyName": "Acme Corp",
+  "country": "US",
+  "email": "john@acme.com",
+  "password": "123456",
+  "webAddress": "acmecorp",
+  "fullUrl": "acmecorp.test.com",
+  "phone": "123456789",
+  "users": 10,
+  "termsAccepted": true,
+  "newsletterSubscribed": false
+}

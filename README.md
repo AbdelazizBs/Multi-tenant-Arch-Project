@@ -49,3 +49,33 @@ Body:
   "termsAccepted": true,
   "newsletterSubscribed": false
 }
+Step 2: Add a Project to the Tenant
+POST /api/projects
+Header:
+X-Tenant-ID: acmecorp
+Body:
+{
+  "name": "My First Project",
+  "description": "Internal dashboard"
+}
+Step 3: Get All Projects
+GET /api/projects
+Header:
+X-Tenant-ID: acmecorp
+Step 4: Delete a Tenant
+Soft Delete:
+DELETE /api/signup/{id}/soft
+Hard Delete (drops DB):
+DELETE /api/signup/{id}/hard
+
+📎 Notes
+Ensure unique webAddress per tenant — it's used to name the DB.
+
+Authentication (e.g., JWT) can be integrated later.
+
+📁 Project Structure Highlights
+SignupEntity → Master DB
+
+Project → Tenant DB
+
+TenantContext, MultiTenantDataSource, TenantFilter → Core multi-tenancy logic

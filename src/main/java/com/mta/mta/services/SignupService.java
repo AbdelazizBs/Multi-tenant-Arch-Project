@@ -1,14 +1,14 @@
 package com.mta.mta.services;
 
-
+import com.mta.mta.configuration.DataSourceConfig;
 import com.mta.mta.entity.SignupEntity;
 import com.mta.mta.repository.SignupRepository;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -24,14 +24,17 @@ public class SignupService {
         this.signupRepository = signupRepository;
         this.jdbcTemplate = jdbcTemplate;
     }
+
     @Transactional
     public SignupEntity registerUser(SignupEntity signup) {
-        // Save user in master DB
         SignupEntity savedUser = signupRepository.save(signup);
 
-        // Create tenant DB (e.g., use webAddress as DB name)
         String dbName = signup.getWebAddress().replaceAll("[^a-zA-Z0-9_]", "_");
         createTenantDatabase(dbName);
+        createProjectTable(dbName);
+
+        String dbUrl = "jdbc:mysql://localhost:3306/" + dbName;
+        DataSourceConfig.addTenantDataSource(dbName, dbUrl);
 
         return savedUser;
     }
@@ -39,8 +42,31 @@ public class SignupService {
     private void createTenantDatabase(String dbName) {
         String createDbSql = "CREATE DATABASE IF NOT EXISTS `" + dbName + "`";
         jdbcTemplate.execute(createDbSql);
-        // You can later initialize schema/tables here if needed
     }
+
+    private void createProjectTable(String dbName) {
+        String createTableSql = """
+            CREATE TABLE IF NOT EXISTS projects (
+                id BIGINT AUTO_INCREMENT PRIMARY KEY,
+                name VARCHAR(255),
+                description VARCHAR(255)
+            );
+        """;
+
+        try (Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/" + dbName, "root", "");
+             Statement statement = connection.createStatement()) {
+            statement.executeUpdate(createTableSql);
+        } catch (SQLException e) {
+            throw new RuntimeException("Error creating project table for tenant: " + dbName, e);
+        }
+    }
+
+    private String formatDbName(String webAddress) {
+        return webAddress.replaceAll("[^a-zA-Z0-9_]", "_");
+    }
+
+
+
 
 
     public void softDeleteUser(Long id) {
@@ -54,9 +80,8 @@ public class SignupService {
         SignupEntity user = signupRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        String dbName = user.getWebAddress();
+        String dbName = formatDbName(user.getWebAddress());
 
-        // Drop tenant DB (MySQL-specific)
         try (Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/", "root", "");
              Statement stmt = conn.createStatement()) {
             stmt.executeUpdate("DROP DATABASE IF EXISTS `" + dbName + "`");
@@ -64,8 +89,6 @@ public class SignupService {
             throw new RuntimeException("Error dropping tenant database", e);
         }
 
-        // Delete from master
         signupRepository.delete(user);
     }
 }
-

@@ -13,22 +13,17 @@ import java.io.IOException;
 public class TenantFilter extends OncePerRequestFilter {
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain)
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-
-        String tenantId = request.getHeader("X-Tenant-ID"); // or from subdomain
-
+        String tenantId = request.getHeader("X-Tenant-ID");
         if (tenantId != null) {
-            TenantContext.setTenant(tenantId);
+            TenantContext.setCurrentTenant(tenantId);
         }
-
         try {
             filterChain.doFilter(request, response);
         } finally {
             TenantContext.clear();
         }
     }
-}
 
+}

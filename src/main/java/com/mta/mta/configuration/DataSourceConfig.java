@@ -12,28 +12,38 @@ import java.util.Map;
 @Configuration
 public class DataSourceConfig {
 
-    @Bean
-    @Primary
-    public DataSource dataSource() {
-        Map<Object, Object> targetDataSources = new HashMap<>();
+    private static final Map<Object, Object> targetDataSources = new HashMap<>();
+    public static MultiTenantDataSource multiTenantDataSource = new MultiTenantDataSource();
 
-        // 1. Load master DB (fixed)
-        DataSource masterDataSource = DataSourceBuilder.create()
+    static {
+        // Initialize with a default DataSource (e.g., master database)
+        DataSource defaultDataSource = DataSourceBuilder.create()
                 .url("jdbc:mysql://localhost:3306/master_db")
                 .username("root")
                 .password("")
+                .driverClassName("com.mysql.cj.jdbc.Driver")
                 .build();
+        targetDataSources.put("master", defaultDataSource);
+        multiTenantDataSource.setTargetDataSources(targetDataSources);
+        multiTenantDataSource.setDefaultTargetDataSource(defaultDataSource);
+        multiTenantDataSource.afterPropertiesSet();
+    }
 
-        targetDataSources.put("master", masterDataSource);
+    @Bean
+    @Primary
+    public DataSource dataSource() {
+        return multiTenantDataSource;
+    }
 
-        // 2. (Optional now) Load existing tenants from DB if needed
-        // You can load dynamic tenants here at runtime later if needed
-
-        MultiTenantDataSource dataSource = new MultiTenantDataSource();
-        dataSource.setDefaultTargetDataSource(masterDataSource);
-        dataSource.setTargetDataSources(targetDataSources);
-        dataSource.afterPropertiesSet();
-
-        return dataSource;
+    public static void addTenantDataSource(String tenantId, String dbUrl) {
+        DataSource tenantDataSource = DataSourceBuilder.create()
+                .url(dbUrl)
+                .username("root")
+                .password("")
+                .driverClassName("com.mysql.cj.jdbc.Driver")
+                .build();
+        targetDataSources.put(tenantId, tenantDataSource);
+        multiTenantDataSource.setTargetDataSources(targetDataSources);
+        multiTenantDataSource.afterPropertiesSet();
     }
 }

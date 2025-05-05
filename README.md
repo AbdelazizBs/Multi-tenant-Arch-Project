@@ -1,39 +1,40 @@
-🏗️ Multi-Tenant Spring Boot Application
+# 🏗️ Multi-Tenant Spring Boot Application
+
 This project implements a dynamic multi-tenant architecture using Spring Boot and MySQL. Each tenant (user/company) gets a dedicated database created at signup time.
 
-🔧 Technologies
-Spring Boot
+---
 
-Spring Data JPA
+## 🔧 Technologies
 
-Hibernate Multi-Tenancy
+- Spring Boot
+- Spring Data JPA
+- Hibernate Multi-Tenancy
+- MySQL
+- RESTful API
 
-MySQL
+---
 
-RESTful API
+## 📦 Features
 
-📦 Features
-Dynamic database creation per tenant
+- Dynamic database creation per tenant
+- Soft and hard delete for tenants
+- Header-based tenant resolution using X-Tenant-ID
+- Sample Project entity per tenant
+- Clean, extensible architecture
 
-Soft and hard delete for tenants
+---
 
-Header-based tenant resolution using X-Tenant-ID
+## 🛠️ Setup Instructions
 
-Sample Project entity per tenant
+### 1. 🐬 MySQL Configuration
 
-Clean, extensible architecture
-
-🛠️ Setup Instructions
-1. 🐬 MySQL Configuration
 Create a database named master_db:
+sql
 CREATE DATABASE master_db;
-🧪 How to Test (Using Postman)
-Step 1: Register a New Tenant
-Method: POST
-
-Endpoint: /api/signup
-
-Body (JSON):
+🧪 How to Test (Postman)
+Step 1: Register New Tenant
+POST /api/signup
+Body:
 {
   "firstName": "John",
   "lastName": "Doe",
@@ -48,54 +49,27 @@ Body (JSON):
   "termsAccepted": true,
   "newsletterSubscribed": false
 }
-Description: This step registers a new tenant (company) in the system and creates a new database for that tenant.
-Step 2: Add a Project for the Tenant
-Method: POST
-
-Endpoint: /api/projects
-
-Headers:
-
-X-Tenant-ID: acmecorp (Replace acmecorp with the web address of your tenant)
-
-Body (JSON):
+Step 2: Add a Project to the Tenant
+POST /api/projects
+Header:
+X-Tenant-ID: acmecorp
+Body:
 {
   "name": "My First Project",
   "description": "Internal dashboard"
 }
-Description: Adds a new project for the specified tenant.
-Step 3: Retrieve All Projects for the Tenant
-Method: GET
-
-Endpoint: /api/projects
-
-Headers:
-
-X-Tenant-ID: acmecorp (Replace acmecorp with your tenant's web address)
-
-Description: Fetches all projects for the given tenant.
-
+Step 3: Get All Projects
+GET /api/projects
+Header:
+X-Tenant-ID: acmecorp
 Step 4: Delete a Tenant
-You can delete a tenant either through a soft delete (removes tenant's data but keeps the database) or a hard delete (drops the tenant's database completely).
-
 Soft Delete:
-Method: DELETE
-
-Endpoint: /api/signup/{id}/soft
-
-Description: Soft deletes a tenant, marking their data as deleted but retaining the database.
-
-Hard Delete:
-Method: DELETE
-
-Endpoint: /api/signup/{id}/hard
-
-Description: Hard deletes a tenant, including dropping their database.
-
-Important: Replace {id} with the tenant's unique ID.
+DELETE /api/signup/{id}/soft
+Hard Delete (drops DB):
+DELETE /api/signup/{id}/hard
 
 📎 Notes
-Ensure that the webAddress is unique for each tenant, as it is used to name the tenant's database.
+Ensure unique webAddress per tenant — it's used to name the DB.
 
 Authentication (e.g., JWT) can be integrated later.
 

@@ -24,7 +24,7 @@ This project implements a dynamic multi-tenant architecture using Spring Boot an
 
 ---
 
-## 🛠️ Setup Instructions
+## 🛠️ Setup Instructions and Postman Test
 
 ### 1. 🐬 MySQL Configuration
 

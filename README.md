@@ -33,6 +33,7 @@ sql
 CREATE DATABASE master_db;
 🧪 How to Test (Postman)
 Step 1: Register New Tenant
+
 POST /api/signup
 Body:
 {
@@ -49,6 +50,7 @@ Body:
   "termsAccepted": true,
   "newsletterSubscribed": false
 }
+
 Step 2: Add a Project to the Tenant
 POST /api/projects
 Header:
